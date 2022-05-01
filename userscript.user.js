@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         Youtube no multiple autoplay
-// @namespace    http://tampermonkey.net/
+// @namespace    icosferu
 // @version      1.0
 // @description  try to take over the world!
 // @author       icosferu
+// @updateURL    https://github.com/icosferu/youtube-autoplay-mutex/raw/main/userscript.user.js
 // @match        https://*.youtube.com/*
 // @run-at       document-end
 // ==/UserScript==
