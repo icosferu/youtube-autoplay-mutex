@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Youtube no multiple autoplay
+// @name         Youtube autoplay mutex
 // @namespace    icosferu
 // @version      1.0
-// @description  try to take over the world!
+// @description  no autoplay when another tab plays
 // @author       icosferu
 // @updateURL    https://github.com/icosferu/youtube-autoplay-mutex/raw/main/userscript.user.js
 // @match        https://*.youtube.com/*
@@ -15,19 +15,19 @@
     const id = '' + Date.now() + Math.random();
 
     const channel = new BroadcastChannel('extension-icosferu');
-    let playing = new Set();
+    let playing = new Map();
     let playing_self;
 
     channel.addEventListener('message', (e) => {
 
         if (e.data === 'new') {
-            channel.postMessage({id, playing: playing_self});
+            channel.postMessage({id, playing: playing_self, title: document.title});
         } else {
 
-            let {id} = e.data;
+            let {id, title} = e.data;
 
             if (e.data.playing) {
-                playing.add(id);
+                playing.set(id, title);
             } else {
                 playing.delete(id);
             }
@@ -38,30 +38,44 @@
 
 
     let video = document.querySelector('.html5-main-video');
-    video.addEventListener('playing', block, true);
 
-    video.addEventListener('playing',() => {
+    video.addEventListener('playing', () => {
 
+        clearTimeout(stalled);
         channel.postMessage({id, playing: true});
         playing_self = true;
     }, true);
 
-    video.addEventListener('pause', () => {
+    let stalled;
 
-        channel.postMessage({id, playing: false});
-        playing_self = false;
+    video.addEventListener('stalled', () => {
+        stalled = setTimeout(stop, 5000);
     });
 
 
-    async function block (e) {
+    function stop () {
 
-        if (playing.size) {
-            e.target.pause();
+        channel.postMessage({id, playing: false});
+        playing_self = false;
+    }
+
+    video.addEventListener('pause', stop);
+    video.addEventListener('ended', stop);
+    addEventListener('beforeunload', stop);
+
+    let check = () => !playing.size || history.length > 1 || performance.getEntriesByType('navigation').at(-1).type === 'reload'
+                   || [...playing.values(), document.title].every(v => v.toLowerCase().includes('asmr'));
+
+    function checker () {
+        if (!check()) {
+            video.pause();
         }
     }
 
+    video.addEventListener('playing', checker);
+
     function unblock () {
-        video.removeEventListener('playing', block, true);
+        video.removeEventListener('playing', checker);
     }
 
     document.addEventListener('keydown', unblock, true);
