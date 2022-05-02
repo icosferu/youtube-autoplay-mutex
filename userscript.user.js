@@ -2,7 +2,7 @@
 // @name         Youtube autoplay mutex
 // @namespace    icosferu
 // @version      1.0
-// @description  no autoplay when another tab plays
+// @description  no autoplay when another tab is playing
 // @author       icosferu
 // @updateURL    https://github.com/icosferu/youtube-autoplay-mutex/raw/main/userscript.user.js
 // @match        https://*.youtube.com/*
